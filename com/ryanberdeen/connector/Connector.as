@@ -11,10 +11,11 @@ package com.ryanberdeen.connector {
     private var socket:XMLSocket;
     private var started:Boolean = false;
     private var pathPrefix:String = 'display_';
-    private var actionPrefix = 'handle_';
+    private var actionPrefix:String;
     private var subscribers:Object = {};
 
-    public function connect(hostname:String, port:Number):void {
+    public function connect(hostname:String, port:Number, actionPrefix:String = ''):void {
+      this.actionPrefix = actionPrefix;
       socket = new XMLSocket();
       socket.addEventListener(Event.CONNECT, onSocketConnect);
       socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketSecurityError);
@@ -54,12 +55,13 @@ package com.ryanberdeen.connector {
 
     private function onSocketData(event:DataEvent):void {
       var message:String = event.data;
+      trace(message);
       var spaceIndex:int = message.indexOf(' ');
       var path:String = message.substring(0, spaceIndex);
       notifySubscribers(path, message.substring(spaceIndex + 1));
     }
 
-    public function notifySubscribers(path:String, message:String) {
+    public function notifySubscribers(path:String, message:String):void {
       var pathSubscribers:Array = subscribers[path];
       if (pathSubscribers) {
         for (var i:int = 0; i < pathSubscribers.length; i++) {
@@ -70,7 +72,7 @@ package com.ryanberdeen.connector {
 
     public function sendEvent(source:String, ...args:Array):void {
       var eventString:String = '';
-      for each (var arg in args) {
+      for each (var arg:String in args) {
         if (eventString != '') {
           eventString += ' ';
         }
@@ -118,7 +120,7 @@ package com.ryanberdeen.connector {
       trace('socket event: ' + event.type);
     }
 
-    public function subscribe(pathSuffix:String, subscriber:Object):void {
+    public function subscribe(pathSuffix:String, subscriber:Object, subscribeOnServer:Boolean = true):void {
       var path:String = pathPrefix + pathSuffix;
       var pathSubscribers:Array = subscribers[path];
       if (!pathSubscribers) {
