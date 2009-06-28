@@ -10,12 +10,12 @@ package com.ryanberdeen.connector {
   public class Connector {
     private var socket:XMLSocket;
     private var started:Boolean = false;
-    private var pathPrefix:String = 'display_';
-    private var actionPrefix:String;
+    private var pathPrefix:String;
+    private var actionPrefix:String = 'handle_';
     private var subscribers:Object = {};
 
-    public function connect(hostname:String, port:Number, actionPrefix:String = ''):void {
-      this.actionPrefix = actionPrefix;
+    public function connect(hostname:String, port:Number, pathPrefix:String = ''):void {
+      this.pathPrefix = pathPrefix;
       socket = new XMLSocket();
       socket.addEventListener(Event.CONNECT, onSocketConnect);
       socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketSecurityError);
@@ -55,7 +55,6 @@ package com.ryanberdeen.connector {
 
     private function onSocketData(event:DataEvent):void {
       var message:String = event.data;
-      trace(message);
       var spaceIndex:int = message.indexOf(' ');
       var path:String = message.substring(0, spaceIndex);
       notifySubscribers(path, message.substring(spaceIndex + 1));
